@@ -1,26 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TeraBox Video Viewer - The Awaken Devil</title>
-  <link rel="stylesheet" href="css/style.css">
+  <title>TeraBox Downloader</title>
 </head>
 <body>
-  <h1>TeraBox Video Fetcher</h1>
-  <input type="text" id="urlInput" placeholder="Paste TeraBox video URL here..." />
-  <button onclick="fetchTeraBoxData()">Fetch Video</button>
+  <h2>TeraBox Video Downloader</h2>
+  <input type="text" id="urlInput" placeholder="Enter TeraBox URL" size="50">
+  <button onclick="getVideo()">Fetch</button>
 
-  <div id="result" class="video-card" style="display: none;">
-    <img id="thumb" class="thumb" />
-    <div class="info">
-      <h2 id="fileName"></h2>
-      <p><strong>Size:</strong> <span id="size"></span></p>
-      <video id="videoPlayer" controls></video>
-      <a id="downloadLink" class="download-btn" target="_blank">Download Video</a>
-    </div>
-  </div>
+  <div id="result" style="margin-top:20px;"></div>
 
-  <script src="js/main.js"></script>
+  <script>
+    async function getVideo() {
+      const url = document.getElementById("urlInput").value;
+      const proxyUrl = `https://terabox.sg61x.workers.dev/?url=${encodeURIComponent(url)}`;
+
+      try {
+        const res = await fetch(proxyUrl);
+        const json = await res.json();
+
+        if (json.status === "success") {
+          const data = json.data.structure;
+
+          document.getElementById("result").innerHTML = `
+            <h3>${data.file_name}</h3>
+            <img src="${data.thumb}" width="300"><br><br>
+            <video controls width="300" src="${data.stream_url}"></video><br><br>
+            <a href="${data.download_url}" download>Download</a>
+          `;
+        } else {
+          document.getElementById("result").innerHTML = `❌ Error: ${json.error_msg || "Invalid link"}`;
+        }
+      } catch (err) {
+        document.getElementById("result").innerHTML = `❌ Fetch failed: ${err.message}`;
+      }
+    }
+  </script>
 </body>
 </html>
